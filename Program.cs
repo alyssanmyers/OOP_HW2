@@ -26,12 +26,12 @@ namespace Myers
             {
                 foreach (var value in json.Object)
                 {
-                    Console.Write(value.Key + ": ");
-                    Console.Write(value.Value + "\n");
+                    //
                 }
+                Console.WriteLine(json);
+                Console.WriteLine(json.ToString(0));
             }
 
-            Console.WriteLine("\n" + json);
         }
     }
 }

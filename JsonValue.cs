@@ -23,9 +23,12 @@ namespace Myers {
             return Value.ToString();
         }
 
-        public string ToString(int i = 0)
+        public string ToString(int i)
         {
-            return Value.ToString();
+            string str = "";
+            var Formatter = new JsonFormatter();
+            str = Formatter.Write(this);
+            return str;
         }
 
         public JValue()
@@ -172,6 +175,97 @@ namespace Myers {
         }
     }
 
+
+    internal class JsonFormatter
+    {
+        int Indent = 1;
+
+        public string Write(bool Value)
+        {
+            return Value.ToString();
+        }
+
+        public string Write(double Value)
+        {
+            return Value.ToString();
+        }
+
+        public string Write(string Value)
+        {
+            string str = "\"";
+            str += Value.ToString();
+            str += "\"";
+
+            return str;
+        }
+
+        public string Write(List<JValue> Values)
+        {
+            string str = "[\n";
+            int Count = 0;
+
+            foreach (var Value in Values)
+            {
+                if (Count != 0) str += ",\n";
+                for (int i = 0; i <= Indent; i++) str += "\t";
+                str += Write(Value);
+                Count++;
+            }
+
+            str += "\n";
+            for (int i = 0; i <= Indent; i++) str += "\t";
+            str += "]";
+            return str;
+        }
+
+        public string Write(Dictionary<string, JValue> Values)
+        {
+            string Str = "{\n";
+            int Count = 0;
+
+            foreach (var Value in Values)
+            {
+                if (Count != 0) Str += ",\n";
+
+                Str += "\t";
+                Str +=  Write(Value.Key) + ": " + Write(Value.Value);
+
+                if (Value.Value.Type == JType.Array) Indent++;
+                else Indent = 1;
+
+                Count++;
+            }
+
+            Str += "\n}";
+            return Str;
+        }
+
+        public string Write(byte[] Values)
+        {
+            return System.Convert.ToBase64String(Values);
+        }
+
+        public string Write(JValue Value)
+        {
+            switch (Value.Type)
+            {
+                case JType.Bool :
+                    return Write(Value.Bool);
+                case JType.Number :
+                    return Write(Value.Number);
+                case JType.String :
+                    return Write(Value.String);
+                case JType.Array :
+                    return Write(Value.Array);
+                case JType.Object :
+                    return Write(Value.Object);
+                case JType.Blob :
+                    return Write(Value.Blob);
+                default:
+                    throw new NullReferenceException();
+            }
+        }
+    }
     internal class JsonValue
     {
     }
@@ -184,11 +278,6 @@ namespace Myers {
         {
             return Value.ToString();
         }
-
-        public string ToString(int i = 0)
-        {
-            return Value.ToString();
-        }
     }
 
     internal class JsonNumber : JsonValue
@@ -196,11 +285,6 @@ namespace Myers {
         public double Value;
 
         public override string ToString()
-        {
-            return Value.ToString();
-        }
-
-        public string ToString(int i = 0)
         {
             return Value.ToString();
         }
@@ -218,12 +302,7 @@ namespace Myers {
 
             return str;
         }
-
-        public string ToString(int i = 0)
-        {
-            return Value.ToString();
-        }
-    }
+}
 
     internal class JsonArray : JsonValue
     {
@@ -231,76 +310,24 @@ namespace Myers {
 
         public override string ToString()
         {
-
-            /*  
-             JsonFormatter formatter (level of indentation?, in definistion, in array, etc.)
-             Formatter.Write(Values)
-             return formatter.ToString()
-             
-            Write(bool)
-            Write(double)
-            Write(List<JValue>)
-            Write(Dictionary<string, JValue>)
-            {
-                foreach (value in list)
-                {
-                   Write(value) + ",\n"; 
-                }
-            }
-
-            Write(JValue value)
-            {
-                switch(value.type)
-                {
-                    case JType.Bool:
-                        Write(value.bool);
-                    etc.
-                }   
-            }
-             
-     
-             */
-           
-
-            string str = "[\n";
-
-            foreach (var v in Values)
-            {
-                if (Values.IndexOf(v) == Values.Count - 1)
-                {
-                    str += "\t" + v.ToString();
-                }
-                else
-                {
-                    //str += "\t" + v.ToString() + ",\n";
-                    str += v.ToString(1) + ",\n";
-                }
-            }
-            str += "\n]";
-
-            return str;
-        }
-
-        public string ToString(int indent)
-        {
             string str = "[";
 
             foreach (var v in Values)
             {
                 if (Values.IndexOf(v) == Values.Count - 1)
                 {
-                    str += v.ToString(indent++);
+                    str += "" + v.ToString();
                 }
                 else
                 {
-                    str += v.ToString(indent++) + ",";
+                    str += "" + v.ToString() + ",";
                 }
             }
             str += "]";
 
             return str;
         }
-    }
+}
 
     internal class JsonObject : JsonValue
     {
@@ -311,36 +338,15 @@ namespace Myers {
             string str = "{";
             foreach (var pair in Values)
             {
-                str += "\n\"" + pair.Key + "\"";
-                str += ": ";
-                str += pair.Value.ToString();
-            }
-            str += "\n}";
-
-            return str;
-        }
-
-        public string ToString(int indent)
-        {
-            string str = "{";
-            foreach (var pair in Values)
-            {
                 str += "\"" + pair.Key + "\"";
                 str += ": ";
-                if (pair.Value.Type == JType.Array)
-                {
-                    str += pair.Value.ToString(0);
-                }
-                else
-                {
-                    str += pair.Value.ToString();
-                }
+                str += pair.Value.ToString();
             }
             str += "}";
 
             return str;
         }
-    }
+}
 
     internal class JsonBlob : JsonValue
     {
